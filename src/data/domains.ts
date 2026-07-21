@@ -10,8 +10,9 @@ function mk(
   accent: string,
   subtitle?: string,
   controls?: SliderControl[],
+  linkTo?: string,
 ): DomainNode {
-  const data: DomainNodeData = { label, subtitle, kind, accent, controls };
+  const data: DomainNodeData = { label, subtitle, kind, accent, controls, linkTo };
   return { id, position: { x, y }, data, type: 'pillar' };
 }
 
@@ -49,8 +50,8 @@ const creation: Domain = {
     ]),
     mk('p5', X * 3, 180, 'op', 'CSG carve gills', creationAccent, 'shape'),
     mk('p6', X * 4, 130, 'op', 'Generate LODs', creationAccent, 'shape'),
-    mk('p7', X * 5, 20, 'attr', 'Expose “glow”', creationAccent, 'shape · → Surface'),
-    mk('p8', X * 5, 150, 'output', 'Mushroom asset', creationAccent, 'reusable · → Decorator'),
+    mk('p7', X * 5, 20, 'attr', 'Expose “glow”', creationAccent, 'shape · read downstream', undefined, 'surface'),
+    mk('p8', X * 5, 150, 'output', 'Mushroom asset', creationAccent, 'reusable asset', undefined, 'decorator'),
   ],
   edges: [
     link('p1', 'p2'),
@@ -81,13 +82,13 @@ const decorator: Domain = {
     'Streams GPU far · promotes interactive near',
   ],
   nodes: [
-    mk('d1', 0, 40, 'input', 'Mushroom asset', decoratorAccent, '← from Model Graph'),
+    mk('d1', 0, 40, 'input', 'Mushroom asset', decoratorAccent, 'the authored asset', undefined, 'creation'),
     mk('d2', 0, 210, 'input', 'Terrain surface', decoratorAccent, 'moisture · slope'),
     mk('d3', X, 130, 'op', 'Sampler — density by moisture', decoratorAccent),
     mk('d4', X * 2, 130, 'op', 'Subtract path', decoratorAccent),
     mk('d5', X * 3, 130, 'op', 'Slope / height filter', decoratorAccent),
     mk('d6', X * 4, 130, 'op', 'Randomize yaw · scale · jitter', decoratorAccent),
-    mk('d7', X * 5, 30, 'attr', 'Vary “glow” per copy', decoratorAccent, '→ Surface'),
+    mk('d7', X * 5, 30, 'attr', 'Vary “glow” per copy', decoratorAccent, 'per-copy variation', undefined, 'surface'),
     mk('d8', X * 5, 170, 'output', 'Placed instances', decoratorAccent, 'GPU far · interactive near'),
   ],
   edges: [
@@ -113,7 +114,7 @@ const surface: Domain = {
   layer: 'glow',
   handoffs: ['Reads the “glow” value ← Model Graph', 'Assigns the material → mushroom instances'],
   nodes: [
-    mk('m1', 0, 120, 'attr', '“glow” value', surfaceAccent, '← from Model Graph'),
+    mk('m1', 0, 120, 'attr', '“glow” value', surfaceAccent, 'exposed parameter', undefined, 'creation'),
     mk('m2', X, 110, 'op', 'Emissive (glow)', surfaceAccent, 'drag to brighten →', [
       { param: 'glowIntensity', label: 'Glow intensity', min: 0, max: 2, step: 0.01 },
     ]),
@@ -135,12 +136,12 @@ const move: Domain = {
   layer: 'creature',
   handoffs: ['Uses the creature rig ← Model Graph', 'Fires footstep events → Sound'],
   nodes: [
-    mk('a1', 0, 140, 'input', 'Creature rig', moveAccent, '← from Model Graph'),
+    mk('a1', 0, 140, 'input', 'Creature rig', moveAccent, 'skeleton', undefined, 'creation'),
     mk('a2', X, 140, 'op', 'Blend idle / walk / run', moveAccent),
     mk('a3', X, 20, 'param', 'by speed', moveAccent),
     mk('a4', X * 2, 140, 'op', 'Head-look at player', moveAccent),
     mk('a5', X * 3, 140, 'op', 'Tail sway', moveAccent),
-    mk('a6', X * 4, 140, 'output', 'Footstep events', moveAccent, '→ Sound'),
+    mk('a6', X * 4, 140, 'output', 'Footstep events', moveAccent, 'gameplay events', undefined, 'sound'),
   ],
   edges: [
     link('a1', 'a2'),
@@ -163,8 +164,8 @@ const sound: Domain = {
   handoffs: ['Attaches a hum emitter to each mushroom ← Decorator', 'Triggers footstep SFX ← Move'],
   nodes: [
     mk('u1', 0, 40, 'input', 'Ambient grove bed', soundAccent),
-    mk('u2', 0, 150, 'op', 'Hum emitter per mushroom', soundAccent, '← instances'),
-    mk('u3', 0, 260, 'input', 'Footstep events', soundAccent, '← from Move'),
+    mk('u2', 0, 150, 'op', 'Hum emitter per mushroom', soundAccent, 'per placed instance', undefined, 'decorator'),
+    mk('u3', 0, 260, 'input', 'Footstep events', soundAccent, 'gameplay events', undefined, 'move'),
     mk('u4', X, 260, 'op', 'Footstep SFX', soundAccent),
     mk('u5', X * 2, 150, 'op', 'Reverb zone', soundAccent),
     mk('u6', X * 3, 150, 'output', 'Mix → listener', soundAccent),

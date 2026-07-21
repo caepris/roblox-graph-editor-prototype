@@ -1,6 +1,8 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react';
 import type { DomainNode, NodeKind } from '../types';
 import { useParams } from '../ParamsContext';
+import { useGraphNav } from '../GraphNavContext';
+import { domainById } from '../data/domains';
 
 const KIND_LABEL: Record<NodeKind, string> = {
   input: 'INPUT',
@@ -11,10 +13,12 @@ const KIND_LABEL: Record<NodeKind, string> = {
 };
 
 export default function PillarNode({ data }: NodeProps<DomainNode>) {
-  const { label, subtitle, kind, accent, controls, highlighted, dimmed } = data;
+  const { label, subtitle, kind, accent, controls, highlighted, dimmed, linkTo } = data;
   const { params, setParam } = useParams();
+  const navigate = useGraphNav();
   const isOutput = kind === 'output';
   const isInput = kind === 'input';
+  const target = linkTo ? domainById(linkTo) : null;
 
   const boxShadow = highlighted
     ? `0 0 0 2px ${accent}, 0 0 18px ${accent}66`
@@ -36,6 +40,23 @@ export default function PillarNode({ data }: NodeProps<DomainNode>) {
       </div>
       <div className="pn-label">{label}</div>
       {subtitle && <div className="pn-sub">{subtitle}</div>}
+
+      {target && (
+        <button
+          className="pn-entry nodrag"
+          style={{ borderColor: target.accent, color: target.accent }}
+          title={`Open ${target.name}`}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(target.id);
+          }}
+        >
+          <span className="pn-entry-dot" style={{ background: target.accent }} />
+          {target.name}
+          <span className="pn-entry-arrow">↗</span>
+        </button>
+      )}
 
       {controls?.map((c) => (
         <div className="pn-control nodrag" key={c.param}>

@@ -1,6 +1,7 @@
 import { ReactFlow, Background, Controls, BackgroundVariant } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import PillarNode from './PillarNode';
+import { GraphNavContext } from '../GraphNavContext';
 import type { Domain } from '../types';
 
 const nodeTypes = { pillar: PillarNode };
@@ -9,10 +10,12 @@ export default function GraphCanvas({
   domain,
   visibleIds,
   highlightIds,
+  onNavigate,
 }: {
   domain: Domain;
   visibleIds?: string[];
   highlightIds?: string[];
+  onNavigate: (domainId: string) => void;
 }) {
   const baseNodes = visibleIds
     ? domain.nodes.filter((n) => visibleIds.includes(n.id))
@@ -44,20 +47,22 @@ export default function GraphCanvas({
 
   return (
     <div className="graph-canvas">
-      <ReactFlow
-        key={key}
-        defaultNodes={nodes}
-        defaultEdges={edges}
-        nodeTypes={nodeTypes}
-        fitView
-        fitViewOptions={{ padding: 0.08, maxZoom: 1.6 }}
-        proOptions={{ hideAttribution: true }}
-        minZoom={0.3}
-        defaultEdgeOptions={{ style: { stroke: '#4b5566', strokeWidth: 1.5 } }}
-      >
-        <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#232833" />
-        <Controls showInteractive={false} />
-      </ReactFlow>
+      <GraphNavContext.Provider value={onNavigate}>
+        <ReactFlow
+          key={key}
+          defaultNodes={nodes}
+          defaultEdges={edges}
+          nodeTypes={nodeTypes}
+          fitView
+          fitViewOptions={{ padding: 0.08, maxZoom: 1.6 }}
+          proOptions={{ hideAttribution: true }}
+          minZoom={0.3}
+          defaultEdgeOptions={{ style: { stroke: '#4b5566', strokeWidth: 1.5 } }}
+        >
+          <Background variant={BackgroundVariant.Dots} gap={22} size={1} color="#232833" />
+          <Controls showInteractive={false} />
+        </ReactFlow>
+      </GraphNavContext.Provider>
     </div>
   );
 }

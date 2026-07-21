@@ -38,6 +38,9 @@ export interface DomainNodeData extends Record<string, unknown> {
   controls?: SliderControl[];
   highlighted?: boolean;
   dimmed?: boolean;
+  // When set, this node hands off to / reads from another graph; the id of that
+  // domain. Rendered as a clickable entry point that navigates there.
+  linkTo?: string;
 }
 
 export type Params = Record<ParamKey, number>;

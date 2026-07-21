@@ -108,7 +108,12 @@ export default function App() {
                 onGenerated={() => setPromptSent(true)}
               />
             ) : (
-              <GraphCanvas domain={domain} visibleIds={visibleIds} highlightIds={highlightIds} />
+              <GraphCanvas
+                domain={domain}
+                visibleIds={visibleIds}
+                highlightIds={highlightIds}
+                onNavigate={selectDomain}
+              />
             )}
             {showAnimPreviewBtn && (
               <button
