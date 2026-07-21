@@ -50,8 +50,8 @@ const creation: Domain = {
     ]),
     mk('p5', X * 3, 180, 'op', 'CSG carve gills', creationAccent, 'shape'),
     mk('p6', X * 4, 130, 'op', 'Generate LODs', creationAccent, 'shape'),
-    mk('p7', X * 5, 20, 'attr', 'Expose “glow”', creationAccent, 'shape · read downstream', undefined, 'surface'),
-    mk('p8', X * 5, 150, 'output', 'Mushroom asset', creationAccent, 'reusable asset', undefined, 'decorator'),
+    mk('p7', X * 5, 20, 'attr', 'Expose “glow”', creationAccent, 'shape · → Material'),
+    mk('p8', X * 5, 150, 'output', 'Mushroom asset', creationAccent, 'reusable · → Decorator'),
   ],
   edges: [
     link('p1', 'p2'),
@@ -88,7 +88,7 @@ const decorator: Domain = {
     mk('d4', X * 2, 130, 'op', 'Subtract path', decoratorAccent),
     mk('d5', X * 3, 130, 'op', 'Slope / height filter', decoratorAccent),
     mk('d6', X * 4, 130, 'op', 'Randomize yaw · scale · jitter', decoratorAccent),
-    mk('d7', X * 5, 30, 'attr', 'Vary “glow” per copy', decoratorAccent, 'per-copy variation', undefined, 'surface'),
+    mk('d7', X * 5, 30, 'attr', 'Vary “glow” per copy', decoratorAccent, 'per-copy · → Material'),
     mk('d8', X * 5, 170, 'output', 'Placed instances', decoratorAccent, 'GPU far · interactive near'),
   ],
   edges: [
@@ -141,7 +141,7 @@ const move: Domain = {
     mk('a3', X, 20, 'param', 'by speed', moveAccent),
     mk('a4', X * 2, 140, 'op', 'Head-look at player', moveAccent),
     mk('a5', X * 3, 140, 'op', 'Tail sway', moveAccent),
-    mk('a6', X * 4, 140, 'output', 'Footstep events', moveAccent, 'gameplay events', undefined, 'sound'),
+    mk('a6', X * 4, 140, 'output', 'Footstep events', moveAccent, '→ Audio'),
   ],
   edges: [
     link('a1', 'a2'),
