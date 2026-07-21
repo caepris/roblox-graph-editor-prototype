@@ -155,29 +155,46 @@ const move: Domain = {
 };
 
 /* ------------------------------- SOUND ------------------------------ */
+/* Roblox audio API: AudioPlayer sources feed AudioEmitter (3D) / AudioDeviceOutput
+   (2D); AudioListener picks up 3D streams; every connection is a Wire carrying a
+   stream from a source "Output" pin to a target "Input" pin. */
 const soundAccent = '#ec4899';
 const sound: Domain = {
   id: 'sound',
   name: 'Audio Graph',
   accent: soundAccent,
-  tagline: 'Bring it to life — route sources through effects into a live mix.',
-  engine: 'Separate CPU DSP engine · per audio frame · runtime',
+  tagline: 'Bring it to life — wire AudioPlayers through emitters, a listener, and effects to the output.',
+  engine: 'Wire processing graph · AudioPlayer → Emitter/Listener → Output · per audio frame · runtime',
   layer: 'sound',
-  handoffs: ['Attaches a hum emitter to each mushroom ← Decorator', 'Triggers footstep SFX ← Move'],
+  handoffs: [
+    'Attaches an AudioEmitter to each mushroom ← Decorator',
+    'Plays footstep SFX on events ← Animation',
+    'Mixes to the player’s AudioDeviceOutput',
+  ],
   nodes: [
-    mk('u1', 0, 40, 'input', 'Ambient grove bed', soundAccent),
-    mk('u2', 0, 150, 'op', 'Hum emitter per mushroom', soundAccent, 'per placed instance', undefined, 'decorator'),
-    mk('u3', 0, 260, 'input', 'Footstep events', soundAccent, 'gameplay events', undefined, 'move'),
-    mk('u4', X, 260, 'op', 'Footstep SFX', soundAccent),
-    mk('u5', X * 2, 150, 'op', 'Reverb zone', soundAccent),
-    mk('u6', X * 3, 150, 'output', 'Mix → listener', soundAccent),
+    // 2D non-directional bed: AudioPlayer → Wire → AudioDeviceOutput
+    mk('u1', 0, 20, 'input', 'AudioPlayer — ambient', soundAccent, '2D · Looping · Volume 0.2'),
+    // 3D positional hum on every scattered mushroom
+    mk('u2', 0, 150, 'input', 'AudioPlayer — hum', soundAccent, 'Looping · per mushroom'),
+    mk('u3', X, 150, 'op', 'AudioEmitter', soundAccent, '3D · on each placed mushroom', undefined, 'decorator'),
+    // 3D footsteps triggered by animation events
+    mk('u4', 0, 300, 'input', 'Footstep events', soundAccent, 'trigger ← Animation', undefined, 'move'),
+    mk('u5', X, 300, 'input', 'AudioPlayer — footsteps', soundAccent, 'one-shot :Play() on event'),
+    mk('u6', X * 2, 300, 'op', 'AudioEmitter', soundAccent, '3D · on the creature'),
+    // Listener picks up 3D streams, runs through effects, out to the device
+    mk('u7', X * 3, 210, 'op', 'AudioListener', soundAccent, 'on character · hears 3D'),
+    mk('u8', X * 4, 120, 'op', 'AudioReverb', soundAccent, 'grove space'),
+    mk('u9', X * 5, 120, 'output', 'AudioDeviceOutput', soundAccent, 'speakers / headphones'),
   ],
   edges: [
-    link('u1', 'u5'),
-    link('u2', 'u5'),
-    link('u3', 'u4'),
-    link('u4', 'u5'),
-    link('u5', 'u6'),
+    link('u2', 'u3'), // hum player → emitter
+    link('u4', 'u5'), // event → footstep player
+    link('u5', 'u6'), // footstep player → emitter
+    link('u3', 'u7'), // emitter → listener (spatial)
+    link('u6', 'u7'), // emitter → listener (spatial)
+    link('u7', 'u8'), // listener → reverb
+    link('u8', 'u9'), // reverb → device output
+    link('u1', 'u9'), // 2D ambient → device output directly
   ],
 };
 

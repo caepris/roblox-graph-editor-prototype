@@ -109,15 +109,17 @@ function buildInstances(layers: Layers): SceneInstance[] {
   if (layers.sound)
     list.push({
       id: 'sound',
-      name: 'Audio emitters',
-      type: 'SoundGroup',
+      name: 'Audio',
+      type: 'Wire graph',
       accent: AUD,
       props: [
-        { key: 'Class', value: 'SoundGroup' },
-        { key: 'Ambient bed', value: 'grove_amb' },
-        { key: 'Hum emitters', value: 'per mushroom' },
-        { key: 'Reverb zone', value: 'On' },
-        { key: 'Footstep SFX', value: 'on events ← Animation' },
+        { key: 'Ambient', value: '2D AudioPlayer · Looping' },
+        { key: 'Per mushroom', value: 'AudioEmitter (3D)' },
+        { key: 'Footsteps', value: 'AudioPlayer · on events ← Animation' },
+        { key: 'Listener', value: 'AudioListener · on character' },
+        { key: 'Effects', value: 'AudioReverb' },
+        { key: 'Output', value: 'AudioDeviceOutput' },
+        { key: 'Routing', value: 'Wire: Output → Input' },
         { key: 'Created by', value: 'Audio Graph' },
       ],
     });
