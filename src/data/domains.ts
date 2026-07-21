@@ -106,25 +106,59 @@ const decorator: Domain = {
 };
 
 /* ------------------------------ SURFACE ----------------------------- */
+/* ShaderVM surface program: read Input.* values, sample DiffuseMap / NormalMap
+   / SpecularMap, run float4 ALU, and write the Surface.* channels. Single basic
+   block, per-fragment, no branching or loops. */
 const surfaceAccent = '#14b8a6';
 const surface: Domain = {
   id: 'surface',
   name: 'Material Graph',
   accent: surfaceAccent,
-  tagline: 'Give it a look — define materials, texture, and appearance.',
-  engine: 'Separate GPU shader engine · per-fragment · runtime',
+  tagline: 'Give it a look — a ShaderVM surface program: sample, blend, and write the Surface.* channels.',
+  engine: 'ShaderVM surface shader · float4 ALU + texture fetch · per-fragment · one basic block (no branch/loop)',
   layer: 'glow',
-  handoffs: ['Reads the “glow” value ← Model Graph', 'Assigns the material → mushroom instances'],
+  handoffs: [
+    'Reads the “glow” value ← Model Graph',
+    'Writes Surface.Color · Normal · Material · Emissive',
+  ],
   nodes: [
-    mk('m1', 0, 120, 'attr', '“glow” value', surfaceAccent, '← “glow” from model'),
-    mk('m2', X, 110, 'op', 'Emissive (glow)', surfaceAccent, 'drag to brighten →', [
+    // — inputs (Input.* namespace) —
+    mk('m1', 0, 60, 'input', 'Input.UV', surfaceAccent, 'mesh texcoords'),
+    mk('m2', 0, 175, 'input', 'Input.WorldPosition', surfaceAccent, '.Y drives moss height'),
+    mk('m3', 0, 290, 'input', 'Input.Time', surfaceAccent, 'seconds · drives pulse'),
+    mk('m4', 0, 405, 'input', '“glow” param', surfaceAccent, '← “glow” from Model'),
+    // — texture fetches —
+    mk('m5', X, 20, 'op', 'SampleAlbedo(UV)', surfaceAccent, 'DiffuseMap · rgba'),
+    mk('m6', X, 140, 'op', 'SampleNormal(UV)', surfaceAccent, 'NormalMap · tangent-space'),
+    mk('m7', X, 260, 'op', 'SampleParams(UV)', surfaceAccent, 'metalness · roughness'),
+    // — float4 ALU —
+    mk('m8', X * 2, 20, 'op', 'Tint · albedo × BrickColor', surfaceAccent),
+    mk('m9', X * 2, 150, 'op', 'Moss blend · Lerp by WorldPos.Y', surfaceAccent),
+    mk('m10', X * 2, 300, 'op', 'SinCos(Time) → pulse', surfaceAccent, 'sc.xxxx * 0.5 + 0.5'),
+    mk('m11', X * 3, 320, 'op', 'Emissive · glowColor × pulse', surfaceAccent, 'drag to brighten →', [
       { param: 'glowIntensity', label: 'Glow intensity', min: 0, max: 2, step: 0.01 },
     ]),
-    mk('m3', X * 2, 120, 'op', 'Pulse over time', surfaceAccent),
-    mk('m4', X * 3, 120, 'op', 'Moss by height', surfaceAccent),
-    mk('m5', X * 4, 120, 'output', 'Material', surfaceAccent, '→ assigned to mushroom'),
+    // — Surface.* outputs —
+    mk('m12', X * 4, 30, 'output', 'Surface.Color', surfaceAccent, 'rgb albedo · a opacity'),
+    mk('m13', X * 4, 140, 'output', 'Surface.Normal', surfaceAccent, 'tangent-space'),
+    mk('m14', X * 4, 250, 'output', 'Surface.Material', surfaceAccent, 'metal · rough · reflect'),
+    mk('m15', X * 4, 360, 'output', 'Surface.Emissive', surfaceAccent, 'rgb glow light'),
   ],
-  edges: [link('m1', 'm2'), link('m2', 'm3'), link('m3', 'm4'), link('m4', 'm5')],
+  edges: [
+    link('m1', 'm5'),
+    link('m1', 'm6'),
+    link('m1', 'm7'), // UV → all three samplers
+    link('m5', 'm8'), // albedo → tint
+    link('m8', 'm9'),
+    link('m2', 'm9'), // tint + world position → moss blend
+    link('m9', 'm12'), // → Surface.Color
+    link('m6', 'm13'), // normal → Surface.Normal
+    link('m7', 'm14'), // params → Surface.Material
+    link('m3', 'm10'), // time → SinCos
+    link('m10', 'm11'),
+    link('m4', 'm11'), // pulse + glow → emissive
+    link('m11', 'm15'), // → Surface.Emissive
+  ],
 };
 
 /* ------------------------------- MOVE ------------------------------- */
