@@ -2,12 +2,13 @@ import type { Node, Edge } from '@xyflow/react';
 
 export type NodeKind = 'input' | 'op' | 'param' | 'attr' | 'output';
 
-export type LayerKey = 'glow' | 'scatter' | 'creature' | 'sound';
+export type LayerKey = 'glow' | 'skin' | 'scatter' | 'creature' | 'sound';
 
 export type Layers = Record<LayerKey, boolean>;
 
 export const DEFAULT_LAYERS: Layers = {
   glow: false,
+  skin: false,
   scatter: false,
   creature: false,
   sound: false,
@@ -15,6 +16,7 @@ export const DEFAULT_LAYERS: Layers = {
 
 export const LAYER_META: Record<LayerKey, { label: string; accent: string }> = {
   glow: { label: 'Glow + moss', accent: '#14b8a6' },
+  skin: { label: 'Alien skin', accent: '#14b8a6' },
   scatter: { label: 'Scatter', accent: '#22c55e' },
   creature: { label: 'Creature', accent: '#f59e0b' },
   sound: { label: 'Sound', accent: '#ec4899' },

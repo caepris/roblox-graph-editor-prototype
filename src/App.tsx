@@ -13,6 +13,7 @@ import type { LayerKey, Layers } from './types';
 // Which layers are on at each guided-tour step (cumulative).
 const TOUR_LAYERS: Layers[] = WORKFLOW.map((_, i) => ({
   glow: i >= 2,
+  skin: i >= 4, // alien skin appears with the creature
   scatter: i >= 3,
   creature: i >= 4,
   sound: i >= 5,
@@ -38,7 +39,7 @@ export default function App() {
   const isPlay = mode === 'play';
   // Play turns the whole scene on and running; Edit uses the composed layers.
   const effectiveLayers: Layers = isPlay
-    ? { glow: true, scatter: true, creature: true, sound: true }
+    ? { glow: true, skin: true, scatter: true, creature: true, sound: true }
     : layers;
   // Animation Graph in Edit keeps the whole grove but focuses on the creature.
   const focus: 'none' | 'creature' = !isPlay && domain.id === 'move' ? 'creature' : 'none';

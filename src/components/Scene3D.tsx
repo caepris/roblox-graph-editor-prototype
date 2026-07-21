@@ -143,11 +143,13 @@ function Creature({
   mode,
   base = [0, 0, 0],
   selected = false,
+  skin = true,
   posRef,
 }: {
   mode: 'static' | 'loop' | 'player';
   base?: Vec3;
   selected?: boolean;
+  skin?: boolean;
   posRef?: MutableRefObject<THREE.Vector3>;
 }) {
   const ref = useRef<THREE.Group>(null);
@@ -192,24 +194,37 @@ function Creature({
     }
   });
 
+  // The alien's "Skin material": bioluminescent purple skin + glowing veins/eyes
+  // when on; a plain untextured grey model when the skin layer is toggled off.
+  const bodyColor = skin ? '#7C4DFF' : '#9aa0ab';
+  const headColor = skin ? '#8B5CF6' : '#aab0bb';
+  const veinColor = '#B388FF';
+  const eyeIntensity = skin ? 2.5 : 0.15;
+  const bodyEmissiveI = skin ? 0.55 : 0;
+
   return (
     <group ref={ref} position={base}>
       {selected && <SelectionRing radius={0.85} />}
       <mesh position={[0, 0.5, 0]} castShadow>
         <capsuleGeometry args={[0.28, 0.5, 6, 12]} />
-        <meshStandardMaterial color="#e06b9a" roughness={0.6} />
+        <meshStandardMaterial
+          color={bodyColor}
+          roughness={0.6}
+          emissive={veinColor}
+          emissiveIntensity={bodyEmissiveI}
+        />
       </mesh>
       <mesh position={[0, 1.0, 0.18]} castShadow>
         <sphereGeometry args={[0.22, 16, 16]} />
-        <meshStandardMaterial color="#f08fb5" roughness={0.6} />
+        <meshStandardMaterial color={headColor} roughness={0.6} />
       </mesh>
       <mesh position={[0.09, 1.05, 0.36]}>
         <sphereGeometry args={[0.05, 8, 8]} />
-        <meshStandardMaterial color="#ffffff" emissive={GLOW} emissiveIntensity={2.5} />
+        <meshStandardMaterial color="#ffffff" emissive={veinColor} emissiveIntensity={eyeIntensity} />
       </mesh>
       <mesh position={[-0.09, 1.05, 0.36]}>
         <sphereGeometry args={[0.05, 8, 8]} />
-        <meshStandardMaterial color="#ffffff" emissive={GLOW} emissiveIntensity={2.5} />
+        <meshStandardMaterial color="#ffffff" emissive={veinColor} emissiveIntensity={eyeIntensity} />
       </mesh>
     </group>
   );
@@ -362,7 +377,7 @@ function Grove({
     return arr;
   }, []);
 
-  const { glow, scatter, creature, sound } = layers;
+  const { glow, skin, scatter, creature, sound } = layers;
   const heroSel = selected === 'hero';
   const areaSel = selected === 'field' || selected === 'material' || selected === 'sound';
   const terrainSel = selected === 'terrain';
@@ -389,6 +404,7 @@ function Grove({
           mode={animate ? 'player' : rigLoop ? 'loop' : 'static'}
           base={CREATURE_BASE}
           selected={selected === 'creature' || selected === 'alien-material' || selected === 'alien-anim'}
+          skin={skin}
           posRef={playerPos}
         />
       )}

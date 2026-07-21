@@ -98,8 +98,8 @@ function buildInstances(layers: Layers): SceneInstance[] {
         type: 'MaterialVariant',
         accent: MAT,
         graphId: 'surface-alien',
-        layerKey: 'glow',
-        hidden: glowOff || creatureHidden,
+        layerKey: 'skin',
+        hidden: !layers.skin || creatureHidden,
         props: [
           { key: 'Class', value: 'MaterialVariant' },
           { key: 'Albedo', value: '#7C4DFF (skin)' },
