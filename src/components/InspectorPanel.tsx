@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useParams } from '../ParamsContext';
-import type { Layers, ParamKey } from '../types';
+import type { Layers, LayerKey, ParamKey } from '../types';
 
 interface PropRow {
   key: string;
@@ -18,6 +18,10 @@ interface SceneInstance {
   graphId?: string;
   // Nested sub-instances (e.g. a MaterialVariant under its mesh).
   children?: SceneInstance[];
+  // The scene layer this instance's visibility maps to (renders an eye toggle).
+  layerKey?: LayerKey;
+  // Whether this row's content is currently absent from the scene (dimmed row).
+  hidden?: boolean;
 }
 
 const CREATION = '#6366f1';
@@ -27,7 +31,12 @@ const ANIM = '#f59e0b';
 const AUD = '#ec4899';
 const WORLD = '#5b6472';
 
+// Every toggleable instance is ALWAYS listed so its eye can turn its layer
+// back on; `hidden` drives the dimmed state and eye-off icon.
 function buildInstances(layers: Layers): SceneInstance[] {
+  const glowOff = !layers.glow;
+  const creatureHidden = !layers.creature;
+
   const hero: SceneInstance = {
     id: 'hero',
     name: 'Mushroom',
@@ -43,17 +52,16 @@ function buildInstances(layers: Layers): SceneInstance[] {
       { key: 'Created by', value: 'Model Graph' },
       { key: 'Exposes', value: '“glow” → Material' },
     ],
-  };
-
-  // The MaterialVariant is a sub-instance of its mesh, not a top-level entry.
-  if (layers.glow)
-    hero.children = [
+    // The MaterialVariant is a sub-instance of its mesh; its eye toggles glow.
+    children: [
       {
         id: 'material',
         name: 'Glow material',
         type: 'MaterialVariant',
         accent: MAT,
         graphId: 'surface',
+        layerKey: 'glow',
+        hidden: glowOff,
         props: [
           { key: 'Class', value: 'MaterialVariant' },
           { key: 'Emissive', value: '#41F5D0' },
@@ -64,9 +72,65 @@ function buildInstances(layers: Layers): SceneInstance[] {
           { key: 'Created by', value: 'Material Graph' },
         ],
       },
-    ];
+    ],
+  };
 
-  const list: SceneInstance[] = [
+  const creature: SceneInstance = {
+    id: 'creature',
+    name: 'Alien creature',
+    type: 'Model',
+    accent: CREATION,
+    graphId: 'alien',
+    layerKey: 'creature',
+    hidden: creatureHidden,
+    props: [
+      { key: 'Class', value: 'Model' },
+      { key: 'Rig', value: '← Model Graph (Alien)' },
+      { key: 'Material', value: 'Skin material' },
+      { key: 'Animation', value: 'idle / walk / run' },
+      { key: 'LODs', value: '3 (auto)' },
+      { key: 'Created by', value: 'Model Graph (Alien)' },
+    ],
+    children: [
+      {
+        id: 'alien-material',
+        name: 'Skin material',
+        type: 'MaterialVariant',
+        accent: MAT,
+        graphId: 'surface-alien',
+        layerKey: 'glow',
+        hidden: glowOff || creatureHidden,
+        props: [
+          { key: 'Class', value: 'MaterialVariant' },
+          { key: 'Albedo', value: '#7C4DFF (skin)' },
+          { key: 'Emissive', value: '#B388FF (veins)' },
+          { key: 'Pulse', value: '1.5 Hz' },
+          { key: 'Belly gradient', value: 'On' },
+          { key: 'Reads', value: '“glow” ← Model Graph (Alien)' },
+          { key: 'Created by', value: 'Material Graph (Alien)' },
+        ],
+      },
+      {
+        id: 'alien-anim',
+        name: 'Animation',
+        type: 'Animator',
+        accent: ANIM,
+        graphId: 'move',
+        hidden: creatureHidden,
+        props: [
+          { key: 'Class', value: 'Animator' },
+          { key: 'Graph', value: 'AnimationGraphDefinition' },
+          { key: 'Clips', value: 'idle / walk / run' },
+          { key: 'Blend', value: 'by speed' },
+          { key: 'Head-look', value: 'player' },
+          { key: 'Fires', value: 'footsteps → Audio' },
+          { key: 'Driven by', value: 'Animation Graph' },
+        ],
+      },
+    ],
+  };
+
+  return [
     {
       id: 'terrain',
       name: 'Terrain surface',
@@ -80,15 +144,14 @@ function buildInstances(layers: Layers): SceneInstance[] {
       ],
     },
     hero,
-  ];
-
-  if (layers.scatter)
-    list.push({
+    {
       id: 'field',
       name: 'Mushroom field',
       type: 'Instances ×64',
       accent: DECO,
       graphId: 'decorator',
+      layerKey: 'scatter',
+      hidden: !layers.scatter,
       props: [
         { key: 'Class', value: 'Model (folder)' },
         { key: 'Count', value: '64' },
@@ -99,73 +162,16 @@ function buildInstances(layers: Layers): SceneInstance[] {
         { key: 'Glow variance', value: '±20% per copy' },
         { key: 'Created by', value: 'Decorator Graph' },
       ],
-    });
-
-  if (layers.creature) {
-    // The alien is a model (purple) — clicking it opens its Model Graph.
-    const creature: SceneInstance = {
-      id: 'creature',
-      name: 'Alien creature',
-      type: 'Model',
-      accent: CREATION,
-      graphId: 'alien',
-      props: [
-        { key: 'Class', value: 'Model' },
-        { key: 'Rig', value: '← Model Graph (Alien)' },
-        { key: 'Material', value: 'Skin material' },
-        { key: 'Animation', value: 'idle / walk / run' },
-        { key: 'LODs', value: '3 (auto)' },
-        { key: 'Created by', value: 'Model Graph (Alien)' },
-      ],
-    };
-
-    const children: SceneInstance[] = [];
-    // The alien's MaterialVariant is a sub-instance of its model, like the mushroom's.
-    if (layers.glow)
-      children.push({
-        id: 'alien-material',
-        name: 'Skin material',
-        type: 'MaterialVariant',
-        accent: MAT,
-        graphId: 'surface-alien',
-        props: [
-          { key: 'Class', value: 'MaterialVariant' },
-          { key: 'Albedo', value: '#7C4DFF (skin)' },
-          { key: 'Emissive', value: '#B388FF (veins)' },
-          { key: 'Pulse', value: '1.5 Hz' },
-          { key: 'Belly gradient', value: 'On' },
-          { key: 'Reads', value: '“glow” ← Model Graph (Alien)' },
-          { key: 'Created by', value: 'Material Graph (Alien)' },
-        ],
-      });
-    // The Animator sub-instance drives the alien from its Animation Graph.
-    children.push({
-      id: 'alien-anim',
-      name: 'Animation',
-      type: 'Animator',
-      accent: ANIM,
-      graphId: 'move',
-      props: [
-        { key: 'Class', value: 'Animator' },
-        { key: 'Graph', value: 'AnimationGraphDefinition' },
-        { key: 'Clips', value: 'idle / walk / run' },
-        { key: 'Blend', value: 'by speed' },
-        { key: 'Head-look', value: 'player' },
-        { key: 'Fires', value: 'footsteps → Audio' },
-        { key: 'Driven by', value: 'Animation Graph' },
-      ],
-    });
-    creature.children = children;
-    list.push(creature);
-  }
-
-  if (layers.sound)
-    list.push({
+    },
+    creature,
+    {
       id: 'sound',
       name: 'Audio',
       type: 'Wire graph',
       accent: AUD,
       graphId: 'sound',
+      layerKey: 'sound',
+      hidden: !layers.sound,
       props: [
         { key: 'Ambient', value: '2D AudioPlayer · Looping' },
         { key: 'Per mushroom', value: 'AudioEmitter (3D)' },
@@ -176,13 +182,36 @@ function buildInstances(layers: Layers): SceneInstance[] {
         { key: 'Routing', value: 'Wire: Output → Input' },
         { key: 'Created by', value: 'Audio Graph' },
       ],
-    });
-
-  return list;
+    },
+  ];
 }
 
 function flatten(list: SceneInstance[]): SceneInstance[] {
   return list.flatMap((i) => [i, ...(i.children ?? [])]);
+}
+
+function EyeIcon({ off }: { off: boolean }) {
+  const common = {
+    width: 15,
+    height: 15,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 2,
+    strokeLinecap: 'round' as const,
+    strokeLinejoin: 'round' as const,
+  };
+  return off ? (
+    <svg {...common}>
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+      <line x1="1" y1="1" x2="23" y2="23" />
+    </svg>
+  ) : (
+    <svg {...common}>
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+      <circle cx="12" cy="12" r="3" />
+    </svg>
+  );
 }
 
 export default function InspectorPanel({
@@ -190,19 +219,21 @@ export default function InspectorPanel({
   selectedId,
   onSelect,
   onOpenGraph,
+  onToggleLayer,
 }: {
   layers: Layers;
   selectedId: string;
   onSelect: (id: string) => void;
   onOpenGraph: (graphId: string) => void;
+  onToggleLayer: (key: LayerKey) => void;
 }) {
   const { params, setParam } = useParams();
 
   const instances = buildInstances(layers);
   const flat = flatten(instances);
+  const visibleCount = flat.filter((i) => !i.hidden).length;
 
-  // If a selected instance disappears (its layer was removed), fall back to the
-  // mushroom. An empty selection ('') is intentional (deselected) and kept as-is.
+  // Keep a sane selection if the current one somehow leaves the list.
   useEffect(() => {
     const ids = flatten(buildInstances(layers)).map((i) => i.id);
     if (selectedId && !ids.includes(selectedId)) onSelect('hero');
@@ -222,11 +253,15 @@ export default function InspectorPanel({
   };
 
   const renderItem = (i: SceneInstance, child = false) => (
-    <button
+    <div
       key={i.id}
-      className={`insp-item ${child ? 'child' : ''} ${selectedId === i.id ? 'active' : ''}`}
+      className={`insp-item ${child ? 'child' : ''} ${selectedId === i.id ? 'active' : ''} ${
+        i.hidden ? 'hidden' : ''
+      }`}
       style={selectedId === i.id ? { borderColor: i.accent } : undefined}
       onClick={() => handleClick(i)}
+      role="button"
+      tabIndex={0}
       title={
         selectedId === i.id
           ? 'Click to deselect'
@@ -240,14 +275,27 @@ export default function InspectorPanel({
         <span className="insp-item-name">{i.name}</span>
         <span className="insp-item-type">{i.type}</span>
       </span>
-    </button>
+      {i.layerKey && (
+        <button
+          className="insp-eye"
+          onClick={(e) => {
+            e.stopPropagation();
+            onToggleLayer(i.layerKey!);
+          }}
+          title={i.hidden ? `Show ${i.name}` : `Hide ${i.name}`}
+          aria-label={i.hidden ? `Show ${i.name}` : `Hide ${i.name}`}
+        >
+          <EyeIcon off={!!i.hidden} />
+        </button>
+      )}
+    </div>
   );
 
   return (
     <aside className="inspector">
       <div className="insp-head">
         Explorer
-        <span className="insp-count">{flat.length} in scene</span>
+        <span className="insp-count">{visibleCount} in scene</span>
       </div>
 
       <div className="insp-explorer">

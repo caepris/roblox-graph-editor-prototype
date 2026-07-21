@@ -19,13 +19,15 @@ const TOUR_LAYERS: Layers[] = WORKFLOW.map((_, i) => ({
 }));
 
 export default function App() {
-  const [activeId, setActiveId] = useState('creation');
-  const [layers, setLayers] = useState<Layers>({ glow: true, scatter: true, creature: false, sound: false });
-  const [tourStep, setTourStep] = useState<number | null>(null); // null = free editing
+  // Start on guided-tour step 1, with domain + layers matching that step so
+  // there's no flash of a non-tour state before the tour opens.
+  const [activeId, setActiveId] = useState(WORKFLOW[0].domainId);
+  const [layers, setLayers] = useState<Layers>({ ...TOUR_LAYERS[0] });
+  const [tourStep, setTourStep] = useState<number | null>(1);
   const [selectedInstance, setSelectedInstance] = useState('hero');
   const [mode, setMode] = useState<'edit' | 'play'>('edit');
   const [animPreview, setAnimPreview] = useState(false); // in-graph animation loop preview
-  const [promptSent, setPromptSent] = useState(false); // step 1: has the AI generated yet
+  const [promptSent, setPromptSent] = useState(!WORKFLOW[0].chat); // step 1: has the AI generated yet
 
   const domain = domainById(activeId);
   const activeStep = tourStep !== null ? WORKFLOW[tourStep - 1] : null;
@@ -83,8 +85,6 @@ export default function App() {
           <TopBar
             domain={domain}
             domains={DOMAINS}
-            layers={layers}
-            onToggleLayer={toggleLayer}
             mode={mode}
             onToggleMode={toggleMode}
             tourStep={tourStep}
@@ -131,6 +131,7 @@ export default function App() {
           selectedId={selectedInstance}
           onSelect={setSelectedInstance}
           onOpenGraph={selectDomain}
+          onToggleLayer={toggleLayer}
         />
       </div>
     </ParamsProvider>
