@@ -1,4 +1,4 @@
-import { DOMAINS } from '../data/domains';
+import { PRODUCTS, domainById } from '../data/domains';
 
 export default function DomainRail({
   activeId,
@@ -7,6 +7,8 @@ export default function DomainRail({
   activeId: string;
   onSelect: (id: string) => void;
 }) {
+  const activeProduct = domainById(activeId).product;
+
   return (
     <aside className="rail">
       <div className="rail-title">
@@ -19,20 +21,24 @@ export default function DomainRail({
 
       <div className="rail-group">
         <div className="rail-group-label">Graphs</div>
-        {DOMAINS.map((d) => (
-          <button
-            key={d.id}
-            className={`rail-item ${activeId === d.id ? 'active' : ''}`}
-            style={activeId === d.id ? { borderColor: d.accent } : undefined}
-            onClick={() => onSelect(d.id)}
-          >
-            <span className="rail-item-dot" style={{ background: d.accent }} />
-            <span className="rail-name">
-              {d.subject && <span className="rail-subject">{d.subject}</span>}
-              {d.name}
-            </span>
-          </button>
-        ))}
+        {PRODUCTS.map((p) => {
+          const active = activeProduct === p.product;
+          return (
+            <button
+              key={p.product}
+              className={`rail-item ${active ? 'active' : ''}`}
+              style={active ? { borderColor: p.accent } : undefined}
+              // Picking a product from the rail opens its default graph; the
+              // specific graph within a product is chosen from the explorer.
+              onClick={() => {
+                if (!active) onSelect(p.defaultId);
+              }}
+            >
+              <span className="rail-item-dot" style={{ background: p.accent }} />
+              <span className="rail-name">{p.name}</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="rail-foot">Prototype · concept demo</div>

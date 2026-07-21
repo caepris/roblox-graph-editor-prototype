@@ -28,6 +28,7 @@ const X = 230; // horizontal step
 const creationAccent = '#6366f1';
 const creation: Domain = {
   id: 'creation',
+  product: 'model',
   name: 'Model Graph',
   subject: 'Mushroom',
   accent: creationAccent,
@@ -72,6 +73,7 @@ const creation: Domain = {
    but authoring a rigged character. Its rig feeds the Animation Graph. */
 const alien: Domain = {
   id: 'alien',
+  product: 'model',
   name: 'Model Graph',
   subject: 'Alien',
   accent: creationAccent,
@@ -114,6 +116,7 @@ const alien: Domain = {
 const decoratorAccent = '#22c55e';
 const decorator: Domain = {
   id: 'decorator',
+  product: 'decorator',
   name: 'Decorator Graph',
   accent: decoratorAccent,
   tagline:
@@ -154,6 +157,7 @@ const decorator: Domain = {
 const surfaceAccent = '#14b8a6';
 const surface: Domain = {
   id: 'surface',
+  product: 'material',
   name: 'Material Graph',
   subject: 'Mushroom',
   accent: surfaceAccent,
@@ -209,6 +213,7 @@ const surface: Domain = {
    but its own rules: skin tint, a belly→back gradient, and pulsing vein glow. */
 const alienSurface: Domain = {
   id: 'surface-alien',
+  product: 'material',
   name: 'Material Graph',
   subject: 'Alien',
   accent: surfaceAccent,
@@ -261,6 +266,7 @@ const alienSurface: Domain = {
 const moveAccent = '#f59e0b';
 const move: Domain = {
   id: 'move',
+  product: 'animation',
   name: 'Animation Graph',
   accent: moveAccent,
   tagline: 'Bring it to life — blend poses and motion from live game state.',
@@ -291,6 +297,7 @@ const move: Domain = {
 const soundAccent = '#ec4899';
 const sound: Domain = {
   id: 'sound',
+  product: 'audio',
   name: 'Audio Graph',
   accent: soundAccent,
   tagline: 'Bring it to life — wire AudioPlayers through emitters, a listener, and effects to the output.',
@@ -333,3 +340,17 @@ export const DOMAINS: Domain[] = [creation, alien, decorator, surface, alienSurf
 export function domainById(id: string): Domain {
   return DOMAINS.find((d) => d.id === id) ?? DOMAINS[0];
 }
+
+export interface Product {
+  product: string;
+  name: string;
+  accent: string;
+  defaultId: string; // the graph shown when you pick this product from the rail
+}
+
+// One rail entry per product; the first-declared graph is its default view.
+export const PRODUCTS: Product[] = DOMAINS.reduce<Product[]>((acc, d) => {
+  if (!acc.some((p) => p.product === d.product))
+    acc.push({ product: d.product, name: d.name, accent: d.accent, defaultId: d.id });
+  return acc;
+}, []);

@@ -55,7 +55,11 @@ export type DomainNode = Node<DomainNodeData>;
 
 export interface Domain {
   id: string;
-  name: string; // e.g. "Model Graph"
+  // The product this graph belongs to (one rail entry per product). Several
+  // concrete graphs can share a product — e.g. the Mushroom and Alien graphs
+  // are both the "Model Graph" product, picked via the explorer.
+  product: string;
+  name: string; // e.g. "Model Graph" — the product name shown in the rail
   subject?: string; // e.g. "Mushroom" — the specific asset a per-asset graph authors
   accent: string;
   tagline: string;
