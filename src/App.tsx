@@ -18,11 +18,12 @@ const TOUR_LAYERS: Layers[] = [
   { glow: false, skin: false, scatter: false, creature: false, sound: false }, // 1 · ask AI (empty)
   { glow: false, skin: false, scatter: false, creature: false, sound: false }, // 2 · edit mushroom model
   { glow: true, skin: false, scatter: false, creature: false, sound: false }, // 3 · mushroom material
-  { glow: true, skin: false, scatter: false, creature: true, sound: false }, // 4 · alien model
-  { glow: true, skin: true, scatter: false, creature: true, sound: false }, // 5 · alien material
-  { glow: true, skin: true, scatter: false, creature: true, sound: false }, // 6 · alien animation
-  { glow: true, skin: true, scatter: false, creature: true, sound: true }, // 7 · audio
-  { glow: true, skin: true, scatter: true, creature: true, sound: true }, // 8 · play everything
+  { glow: true, skin: false, scatter: true, creature: false, sound: false }, // 4 · decorator (scatter)
+  { glow: true, skin: false, scatter: true, creature: true, sound: false }, // 5 · alien model
+  { glow: true, skin: true, scatter: true, creature: true, sound: false }, // 6 · alien material
+  { glow: true, skin: true, scatter: true, creature: true, sound: false }, // 7 · alien animation
+  { glow: true, skin: true, scatter: true, creature: true, sound: true }, // 8 · audio
+  { glow: true, skin: true, scatter: true, creature: true, sound: true }, // 9 · play everything
 ];
 
 export default function App() {

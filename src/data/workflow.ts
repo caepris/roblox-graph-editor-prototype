@@ -31,47 +31,56 @@ export const WORKFLOW: WorkflowStep[] = [
   },
   {
     id: 4,
+    domainId: 'decorator',
+    title: 'Scatter it across the grove',
+    action:
+      'A Decorator Graph scatters hundreds of the mushroom across the grove — avoiding the path and varying each copy, streamed at runtime.',
+    stage: 4,
+    runsAt: 'Runtime',
+  },
+  {
+    id: 5,
     domainId: 'alien',
     title: 'Create the alien’s Model Graph',
     action:
       'The creator authors a second asset — an alien creature — with its own Model Graph, producing a rigged, reusable model.',
-    stage: 4,
+    stage: 5,
     runsAt: 'Offline',
   },
   {
-    id: 5,
+    id: 6,
     domainId: 'surface-alien',
     title: 'Add a material to the alien',
     action:
       'The creator gives the alien a skin material; its own Material Graph opens, driving the bioluminescent skin.',
-    stage: 5,
-    runsAt: 'Runtime',
-  },
-  {
-    id: 6,
-    domainId: 'move',
-    title: 'Animate the alien',
-    action:
-      'An Animation Graph blends idle, walk, and run from live game state so the alien roams — evaluated every frame.',
     stage: 6,
     runsAt: 'Runtime',
   },
   {
     id: 7,
-    domainId: 'sound',
-    title: 'Add audio instances',
+    domainId: 'move',
+    title: 'Animate the alien',
     action:
-      'They wire up an ambient bed, a hum on each mushroom, and footstep sounds through the Audio Graph.',
+      'An Animation Graph blends idle, walk, and run from live game state so the alien roams — evaluated every frame.',
     stage: 7,
     runsAt: 'Runtime',
   },
   {
     id: 8,
     domainId: 'sound',
+    title: 'Add audio instances',
+    action:
+      'They wire up an ambient bed, a hum on each mushroom, and footstep sounds through the Audio Graph.',
+    stage: 8,
+    runsAt: 'Runtime',
+  },
+  {
+    id: 9,
+    domainId: 'sound',
     title: 'Press play and test it',
     action:
       'Everything runs together at runtime — press Play to bring the grove to life and move the creature.',
-    stage: 8,
+    stage: 9,
     runsAt: 'Runtime',
   },
 ];
