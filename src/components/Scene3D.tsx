@@ -194,37 +194,28 @@ function Creature({
     }
   });
 
-  // The alien's "Skin material": bioluminescent purple skin + glowing veins/eyes
-  // when on; a plain untextured grey model when the skin layer is toggled off.
-  const bodyColor = skin ? '#7C4DFF' : '#9aa0ab';
-  const headColor = skin ? '#8B5CF6' : '#aab0bb';
-  const veinColor = '#B388FF';
-  const eyeIntensity = skin ? 2.5 : 0.15;
-  const bodyEmissiveI = skin ? 0.55 : 0;
+  // The alien keeps its original pink look; its "Skin material" only drives the
+  // bioluminescent eye glow — bright when on, dim when the skin layer is off.
+  const eyeIntensity = skin ? 2.5 : 0.2;
 
   return (
     <group ref={ref} position={base}>
       {selected && <SelectionRing radius={0.85} />}
       <mesh position={[0, 0.5, 0]} castShadow>
         <capsuleGeometry args={[0.28, 0.5, 6, 12]} />
-        <meshStandardMaterial
-          color={bodyColor}
-          roughness={0.6}
-          emissive={veinColor}
-          emissiveIntensity={bodyEmissiveI}
-        />
+        <meshStandardMaterial color="#e06b9a" roughness={0.6} />
       </mesh>
       <mesh position={[0, 1.0, 0.18]} castShadow>
         <sphereGeometry args={[0.22, 16, 16]} />
-        <meshStandardMaterial color={headColor} roughness={0.6} />
+        <meshStandardMaterial color="#f08fb5" roughness={0.6} />
       </mesh>
       <mesh position={[0.09, 1.05, 0.36]}>
         <sphereGeometry args={[0.05, 8, 8]} />
-        <meshStandardMaterial color="#ffffff" emissive={veinColor} emissiveIntensity={eyeIntensity} />
+        <meshStandardMaterial color="#ffffff" emissive={GLOW} emissiveIntensity={eyeIntensity} />
       </mesh>
       <mesh position={[-0.09, 1.05, 0.36]}>
         <sphereGeometry args={[0.05, 8, 8]} />
-        <meshStandardMaterial color="#ffffff" emissive={veinColor} emissiveIntensity={eyeIntensity} />
+        <meshStandardMaterial color="#ffffff" emissive={GLOW} emissiveIntensity={eyeIntensity} />
       </mesh>
     </group>
   );
