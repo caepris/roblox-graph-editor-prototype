@@ -388,7 +388,7 @@ function Grove({
         <Creature
           mode={animate ? 'player' : rigLoop ? 'loop' : 'static'}
           base={CREATURE_BASE}
-          selected={selected === 'creature'}
+          selected={selected === 'creature' || selected === 'alien-material'}
           posRef={playerPos}
         />
       )}

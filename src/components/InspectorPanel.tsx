@@ -14,6 +14,10 @@ interface SceneInstance {
   type: string;
   accent: string;
   props: PropRow[];
+  // The graph that authors this instance; clicking the item opens it.
+  graphId?: string;
+  // Nested sub-instances (e.g. a MaterialVariant under its mesh).
+  children?: SceneInstance[];
 }
 
 const CREATION = '#6366f1';
@@ -24,6 +28,44 @@ const AUD = '#ec4899';
 const WORLD = '#5b6472';
 
 function buildInstances(layers: Layers): SceneInstance[] {
+  const hero: SceneInstance = {
+    id: 'hero',
+    name: 'Mushroom',
+    type: 'MeshPart · asset',
+    accent: CREATION,
+    graphId: 'creation',
+    props: [
+      { key: 'Class', value: 'MeshPart' },
+      { key: 'Cap radius', editable: { param: 'capRadius', min: 0.5, max: 1.7, step: 0.01 } },
+      { key: 'Stem height', editable: { param: 'stemHeight', min: 0.6, max: 1.8, step: 0.01 } },
+      { key: 'LODs', value: '3 (auto)' },
+      { key: 'Reusable', value: 'Yes' },
+      { key: 'Created by', value: 'Model Graph' },
+      { key: 'Exposes', value: '“glow” → Material' },
+    ],
+  };
+
+  // The MaterialVariant is a sub-instance of its mesh, not a top-level entry.
+  if (layers.glow)
+    hero.children = [
+      {
+        id: 'material',
+        name: 'Glow material',
+        type: 'MaterialVariant',
+        accent: MAT,
+        graphId: 'surface',
+        props: [
+          { key: 'Class', value: 'MaterialVariant' },
+          { key: 'Emissive', value: '#41F5D0' },
+          { key: 'Glow intensity', editable: { param: 'glowIntensity', min: 0, max: 2, step: 0.01 } },
+          { key: 'Pulse', value: '2 Hz' },
+          { key: 'Moss by height', value: 'On' },
+          { key: 'Reads', value: '“glow” ← Model Graph' },
+          { key: 'Created by', value: 'Material Graph' },
+        ],
+      },
+    ];
+
   const list: SceneInstance[] = [
     {
       id: 'terrain',
@@ -37,39 +79,8 @@ function buildInstances(layers: Layers): SceneInstance[] {
         { key: 'Created by', value: 'World' },
       ],
     },
-    {
-      id: 'hero',
-      name: 'Mushroom',
-      type: 'MeshPart · asset',
-      accent: CREATION,
-      props: [
-        { key: 'Class', value: 'MeshPart' },
-        { key: 'Cap radius', editable: { param: 'capRadius', min: 0.5, max: 1.7, step: 0.01 } },
-        { key: 'Stem height', editable: { param: 'stemHeight', min: 0.6, max: 1.8, step: 0.01 } },
-        { key: 'LODs', value: '3 (auto)' },
-        { key: 'Reusable', value: 'Yes' },
-        { key: 'Created by', value: 'Model Graph' },
-        { key: 'Exposes', value: '“glow” → Material' },
-      ],
-    },
+    hero,
   ];
-
-  if (layers.glow)
-    list.push({
-      id: 'material',
-      name: 'Glow material',
-      type: 'MaterialVariant',
-      accent: MAT,
-      props: [
-        { key: 'Class', value: 'MaterialVariant' },
-        { key: 'Emissive', value: '#41F5D0' },
-        { key: 'Glow intensity', editable: { param: 'glowIntensity', min: 0, max: 2, step: 0.01 } },
-        { key: 'Pulse', value: '2 Hz' },
-        { key: 'Moss by height', value: 'On' },
-        { key: 'Reads', value: '“glow” ← Model Graph' },
-        { key: 'Created by', value: 'Material Graph' },
-      ],
-    });
 
   if (layers.scatter)
     list.push({
@@ -77,6 +88,7 @@ function buildInstances(layers: Layers): SceneInstance[] {
       name: 'Mushroom field',
       type: 'Instances ×64',
       accent: DECO,
+      graphId: 'decorator',
       props: [
         { key: 'Class', value: 'Model (folder)' },
         { key: 'Count', value: '64' },
@@ -89,22 +101,46 @@ function buildInstances(layers: Layers): SceneInstance[] {
       ],
     });
 
-  if (layers.creature)
-    list.push({
+  if (layers.creature) {
+    const creature: SceneInstance = {
       id: 'creature',
       name: 'Alien creature',
       type: 'Model',
       accent: ANIM,
+      graphId: 'alien',
       props: [
         { key: 'Class', value: 'Model' },
-        { key: 'Rig', value: '← Model Graph' },
+        { key: 'Rig', value: '← Model Graph (Alien)' },
+        { key: 'Material', value: 'Skin material' },
         { key: 'Blend', value: 'idle / walk / run by speed' },
         { key: 'Speed', value: '2.4 studs/s' },
         { key: 'Head-look', value: 'player' },
         { key: 'Fires', value: 'footsteps → Audio' },
         { key: 'Created by', value: 'Animation Graph' },
       ],
-    });
+    };
+    // The alien's MaterialVariant is a sub-instance of its model, like the mushroom's.
+    if (layers.glow)
+      creature.children = [
+        {
+          id: 'alien-material',
+          name: 'Skin material',
+          type: 'MaterialVariant',
+          accent: MAT,
+          graphId: 'surface-alien',
+          props: [
+            { key: 'Class', value: 'MaterialVariant' },
+            { key: 'Albedo', value: '#7C4DFF (skin)' },
+            { key: 'Emissive', value: '#B388FF (veins)' },
+            { key: 'Pulse', value: '1.5 Hz' },
+            { key: 'Belly gradient', value: 'On' },
+            { key: 'Reads', value: '“glow” ← Model Graph (Alien)' },
+            { key: 'Created by', value: 'Material Graph (Alien)' },
+          ],
+        },
+      ];
+    list.push(creature);
+  }
 
   if (layers.sound)
     list.push({
@@ -112,6 +148,7 @@ function buildInstances(layers: Layers): SceneInstance[] {
       name: 'Audio',
       type: 'Wire graph',
       accent: AUD,
+      graphId: 'sound',
       props: [
         { key: 'Ambient', value: '2D AudioPlayer · Looping' },
         { key: 'Per mushroom', value: 'AudioEmitter (3D)' },
@@ -127,50 +164,81 @@ function buildInstances(layers: Layers): SceneInstance[] {
   return list;
 }
 
+function flatten(list: SceneInstance[]): SceneInstance[] {
+  return list.flatMap((i) => [i, ...(i.children ?? [])]);
+}
+
 export default function InspectorPanel({
   layers,
   selectedId,
   onSelect,
+  onOpenGraph,
 }: {
   layers: Layers;
   selectedId: string;
   onSelect: (id: string) => void;
+  onOpenGraph: (graphId: string) => void;
 }) {
   const { params, setParam } = useParams();
 
   const instances = buildInstances(layers);
+  const flat = flatten(instances);
 
   // If a selected instance disappears (its layer was removed), fall back to the
   // mushroom. An empty selection ('') is intentional (deselected) and kept as-is.
   useEffect(() => {
-    const ids = buildInstances(layers).map((i) => i.id);
+    const ids = flatten(buildInstances(layers)).map((i) => i.id);
     if (selectedId && !ids.includes(selectedId)) onSelect('hero');
   }, [layers, selectedId, onSelect]);
 
-  const selected = instances.find((i) => i.id === selectedId) ?? null;
+  const selected = flat.find((i) => i.id === selectedId) ?? null;
+
+  // Selecting an instance highlights it in the scene and opens its graph.
+  // Clicking the already-selected item deselects it (no navigation).
+  const handleClick = (inst: SceneInstance) => {
+    if (selectedId === inst.id) {
+      onSelect('');
+      return;
+    }
+    onSelect(inst.id);
+    if (inst.graphId) onOpenGraph(inst.graphId);
+  };
+
+  const renderItem = (i: SceneInstance, child = false) => (
+    <button
+      key={i.id}
+      className={`insp-item ${child ? 'child' : ''} ${selectedId === i.id ? 'active' : ''}`}
+      style={selectedId === i.id ? { borderColor: i.accent } : undefined}
+      onClick={() => handleClick(i)}
+      title={
+        selectedId === i.id
+          ? 'Click to deselect'
+          : i.graphId
+            ? `Select ${i.name} · opens its graph`
+            : `Select ${i.name}`
+      }
+    >
+      <span className="insp-item-dot" style={{ background: i.accent }} />
+      <span className="insp-item-text">
+        <span className="insp-item-name">{i.name}</span>
+        <span className="insp-item-type">{i.type}</span>
+      </span>
+    </button>
+  );
 
   return (
     <aside className="inspector">
       <div className="insp-head">
         Explorer
-        <span className="insp-count">{instances.length} in scene</span>
+        <span className="insp-count">{flat.length} in scene</span>
       </div>
 
       <div className="insp-explorer">
         {instances.map((i) => (
-          <button
-            key={i.id}
-            className={`insp-item ${selectedId === i.id ? 'active' : ''}`}
-            style={selectedId === i.id ? { borderColor: i.accent } : undefined}
-            onClick={() => onSelect(selectedId === i.id ? '' : i.id)}
-            title={selectedId === i.id ? 'Click to deselect' : `Select ${i.name}`}
-          >
-            <span className="insp-item-dot" style={{ background: i.accent }} />
-            <span className="insp-item-text">
-              <span className="insp-item-name">{i.name}</span>
-              <span className="insp-item-type">{i.type}</span>
-            </span>
-          </button>
+          <div key={i.id} className="insp-node">
+            {renderItem(i)}
+            {i.children?.map((c) => renderItem(c, true))}
+          </div>
         ))}
       </div>
 

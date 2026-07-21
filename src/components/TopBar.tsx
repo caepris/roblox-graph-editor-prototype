@@ -33,6 +33,7 @@ export default function TopBar({
         <div className="tb-brand">
           <div className="tb-project">Untitled grove</div>
           <div className="tb-breadcrumb">
+            {domain.subject && <span className="tb-crumb-subject">{domain.subject}</span>}
             <span className="tb-crumb" style={{ color: domain.accent }}>
               {domain.name}
             </span>

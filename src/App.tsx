@@ -130,6 +130,7 @@ export default function App() {
           layers={effectiveLayers}
           selectedId={selectedInstance}
           onSelect={setSelectedInstance}
+          onOpenGraph={selectDomain}
         />
       </div>
     </ParamsProvider>

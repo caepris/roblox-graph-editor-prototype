@@ -134,8 +134,16 @@ body {
   font-size: 13.5px;
 }
 .rail-name {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
   font-size: 11px;
   color: var(--muted);
+}
+.rail-subject {
+  font-size: 13px;
+  font-weight: 650;
+  color: var(--text);
 }
 .rail-foot {
   margin-top: auto;
@@ -179,6 +187,11 @@ body {
   gap: 7px;
   font-size: 12px;
   font-weight: 600;
+}
+.tb-crumb-subject {
+  color: var(--text);
+  font-weight: 650;
+  margin-right: 6px;
 }
 .tb-crumb-sep {
   color: var(--muted-2);
@@ -878,6 +891,24 @@ body {
 }
 .insp-item.active {
   background: #1c2432;
+}
+.insp-node {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.insp-item.child {
+  margin-left: 18px;
+  position: relative;
+}
+.insp-item.child::before {
+  content: '';
+  position: absolute;
+  left: -9px;
+  top: 50%;
+  width: 7px;
+  height: 1px;
+  background: var(--muted-2);
 }
 .insp-item-dot {
   width: 9px;

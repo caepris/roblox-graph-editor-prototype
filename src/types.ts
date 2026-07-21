@@ -56,6 +56,7 @@ export type DomainNode = Node<DomainNodeData>;
 export interface Domain {
   id: string;
   name: string; // e.g. "Model Graph"
+  subject?: string; // e.g. "Mushroom" — the specific asset a per-asset graph authors
   accent: string;
   tagline: string;
   engine: string;

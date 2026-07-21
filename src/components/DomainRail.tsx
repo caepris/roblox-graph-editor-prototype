@@ -27,7 +27,10 @@ export default function DomainRail({
             onClick={() => onSelect(d.id)}
           >
             <span className="rail-item-dot" style={{ background: d.accent }} />
-            <span className="rail-name">{d.name}</span>
+            <span className="rail-name">
+              {d.subject && <span className="rail-subject">{d.subject}</span>}
+              {d.name}
+            </span>
           </button>
         ))}
       </div>
