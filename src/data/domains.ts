@@ -51,6 +51,7 @@ const creation: Domain = {
     mk('p5', X * 3, 180, 'op', 'CSG carve gills', creationAccent, 'shape'),
     mk('p6', X * 4, 130, 'op', 'Generate LODs', creationAccent, 'shape'),
     mk('p7', X * 5, 20, 'attr', 'Expose “glow”', creationAccent, 'shape · → Material'),
+    mk('p9', X * 4, 270, 'input', 'Material', creationAccent, 'applied appearance', undefined, 'surface'),
     mk('p8', X * 5, 150, 'output', 'Mushroom asset', creationAccent, 'reusable · → Decorator'),
   ],
   edges: [
@@ -61,6 +62,7 @@ const creation: Domain = {
     link('p5', 'p6'),
     link('p6', 'p7'),
     link('p6', 'p8'),
+    link('p9', 'p8'),
   ],
 };
 
@@ -114,7 +116,7 @@ const surface: Domain = {
   layer: 'glow',
   handoffs: ['Reads the “glow” value ← Model Graph', 'Assigns the material → mushroom instances'],
   nodes: [
-    mk('m1', 0, 120, 'attr', '“glow” value', surfaceAccent, 'exposed parameter', undefined, 'creation'),
+    mk('m1', 0, 120, 'attr', '“glow” value', surfaceAccent, '← “glow” from model'),
     mk('m2', X, 110, 'op', 'Emissive (glow)', surfaceAccent, 'drag to brighten →', [
       { param: 'glowIntensity', label: 'Glow intensity', min: 0, max: 2, step: 0.01 },
     ]),
