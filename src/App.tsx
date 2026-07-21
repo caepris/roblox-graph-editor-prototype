@@ -1,0 +1,132 @@
+import { useCallback, useEffect, useState } from 'react';
+import DomainRail from './components/DomainRail';
+import TopBar from './components/TopBar';
+import GraphCanvas from './components/GraphCanvas';
+import ChatPanel from './components/ChatPanel';
+import PreviewStage from './components/PreviewStage';
+import InspectorPanel from './components/InspectorPanel';
+import { ParamsProvider } from './ParamsContext';
+import { DOMAINS, domainById } from './data/domains';
+import { WORKFLOW } from './data/workflow';
+import type { LayerKey, Layers } from './types';
+
+// Which layers are on at each guided-tour step (cumulative).
+const TOUR_LAYERS: Layers[] = WORKFLOW.map((_, i) => ({
+  glow: i >= 2,
+  scatter: i >= 3,
+  creature: i >= 4,
+  sound: i >= 5,
+}));
+
+export default function App() {
+  const [activeId, setActiveId] = useState('creation');
+  const [layers, setLayers] = useState<Layers>({ glow: true, scatter: true, creature: false, sound: false });
+  const [tourStep, setTourStep] = useState<number | null>(null); // null = free editing
+  const [selectedInstance, setSelectedInstance] = useState('hero');
+  const [mode, setMode] = useState<'edit' | 'play'>('edit');
+  const [animPreview, setAnimPreview] = useState(false); // in-graph animation loop preview
+  const [promptSent, setPromptSent] = useState(false); // step 1: has the AI generated yet
+
+  const domain = domainById(activeId);
+  const activeStep = tourStep !== null ? WORKFLOW[tourStep - 1] : null;
+  const isChat = activeStep?.chat ?? false;
+  const visibleIds = activeStep && !activeStep.chat ? activeStep.nodeIds : undefined;
+  const highlightIds = activeStep && !activeStep.chat ? activeStep.highlightIds : undefined;
+
+  const isPlay = mode === 'play';
+  // Play turns the whole scene on and running; Edit uses the composed layers.
+  const effectiveLayers: Layers = isPlay
+    ? { glow: true, scatter: true, creature: true, sound: true }
+    : layers;
+  // Animation Graph in Edit keeps the whole grove but focuses on the creature.
+  const focus: 'none' | 'creature' = !isPlay && domain.id === 'move' ? 'creature' : 'none';
+  const rigLoop = focus === 'creature' && animPreview;
+  const showAnimPreviewBtn = focus === 'creature' && !isChat;
+  // Step 1 starts with an empty world until the assistant "generates" the graph.
+  const emptyStage = isChat && !promptSent;
+
+  // Opening the Animation Graph in Edit selects & focuses the creature.
+  useEffect(() => {
+    if (!isPlay && domain.id === 'move') setSelectedInstance('creature');
+  }, [domain.id, isPlay]);
+
+  const selectDomain = useCallback((id: string) => {
+    setTourStep(null); // leaving the tour when you free-navigate
+    setActiveId(id);
+    const d = domainById(id);
+    // Editing a domain turns on the layer it authors, so your edits are visible.
+    if (d.layer) setLayers((l) => ({ ...l, [d.layer as LayerKey]: true }));
+  }, []);
+
+  const toggleLayer = useCallback((key: LayerKey) => {
+    setLayers((l) => ({ ...l, [key]: !l[key] }));
+  }, []);
+
+  const goToTourStep = useCallback((step: number) => {
+    const clamped = Math.min(WORKFLOW.length, Math.max(1, step));
+    setTourStep(clamped);
+    setActiveId(WORKFLOW[clamped - 1].domainId);
+    setLayers({ ...TOUR_LAYERS[clamped - 1] });
+    // Re-entering the chat step resets to an empty, ungenerated world.
+    if (WORKFLOW[clamped - 1].chat) setPromptSent(false);
+  }, []);
+
+  const startTour = useCallback(() => goToTourStep(1), [goToTourStep]);
+  const exitTour = useCallback(() => setTourStep(null), []);
+  const toggleMode = useCallback(() => setMode((m) => (m === 'play' ? 'edit' : 'play')), []);
+
+  return (
+    <ParamsProvider>
+      <div className="app">
+        <DomainRail activeId={domain.id} onSelect={selectDomain} />
+        <div className="main">
+          <TopBar
+            domain={domain}
+            domains={DOMAINS}
+            layers={layers}
+            onToggleLayer={toggleLayer}
+            mode={mode}
+            onToggleMode={toggleMode}
+            tourStep={tourStep}
+            onStartTour={startTour}
+            onExitTour={exitTour}
+            onTourStep={goToTourStep}
+          />
+          <PreviewStage
+            layers={effectiveLayers}
+            selected={selectedInstance}
+            animate={isPlay}
+            focus={focus}
+            rigLoop={rigLoop}
+            empty={emptyStage}
+          />
+          <div className="graph-area">
+            {isChat && tourStep !== null ? (
+              <ChatPanel
+                accent={domain.accent}
+                onOpenGraph={() => goToTourStep(tourStep + 1)}
+                onGenerated={() => setPromptSent(true)}
+              />
+            ) : (
+              <GraphCanvas domain={domain} visibleIds={visibleIds} highlightIds={highlightIds} />
+            )}
+            {showAnimPreviewBtn && (
+              <button
+                className={`anim-preview-btn ${animPreview ? 'on' : ''}`}
+                style={{ borderColor: domain.accent, color: animPreview ? '#0b0e15' : domain.accent, background: animPreview ? domain.accent : undefined }}
+                onClick={() => setAnimPreview((p) => !p)}
+              >
+                {animPreview ? '❚❚ Stop preview' : '▶ Preview animation'}
+              </button>
+            )}
+          </div>
+        </div>
+        <InspectorPanel
+          layers={effectiveLayers}
+          selectedId={selectedInstance}
+          onSelect={setSelectedInstance}
+        />
+      </div>
+    </ParamsProvider>
+  );
+}
