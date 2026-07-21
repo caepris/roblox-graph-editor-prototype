@@ -53,14 +53,25 @@ export default function TopBar({
         </div>
       </div>
 
-      {tourStep !== null && <TourSubbar step={tourStep} onTourStep={onTourStep} />}
+      {tourStep !== null && (
+        <TourSubbar step={tourStep} onTourStep={onTourStep} onExitTour={onExitTour} />
+      )}
     </header>
   );
 }
 
-function TourSubbar({ step, onTourStep }: { step: number; onTourStep: (step: number) => void }) {
+function TourSubbar({
+  step,
+  onTourStep,
+  onExitTour,
+}: {
+  step: number;
+  onTourStep: (step: number) => void;
+  onExitTour: () => void;
+}) {
   const tour = WORKFLOW[step - 1];
   const runsAt = RUNS_AT_META[tour.runsAt];
+  const isLast = step >= WORKFLOW.length;
   return (
     <div className="tour-subbar">
       <div className="tour-info">
@@ -94,10 +105,9 @@ function TourSubbar({ step, onTourStep }: { step: number; onTourStep: (step: num
         </button>
         <button
           className="tour-btn primary"
-          disabled={step >= WORKFLOW.length}
-          onClick={() => onTourStep(step + 1)}
+          onClick={() => (isLast ? onExitTour() : onTourStep(step + 1))}
         >
-          Next ›
+          {isLast ? 'Done ✓' : 'Next ›'}
         </button>
       </div>
     </div>
