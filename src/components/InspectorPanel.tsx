@@ -102,43 +102,60 @@ function buildInstances(layers: Layers): SceneInstance[] {
     });
 
   if (layers.creature) {
+    // The alien is a model (purple) — clicking it opens its Model Graph.
     const creature: SceneInstance = {
       id: 'creature',
       name: 'Alien creature',
       type: 'Model',
-      accent: ANIM,
+      accent: CREATION,
       graphId: 'alien',
       props: [
         { key: 'Class', value: 'Model' },
         { key: 'Rig', value: '← Model Graph (Alien)' },
         { key: 'Material', value: 'Skin material' },
-        { key: 'Blend', value: 'idle / walk / run by speed' },
-        { key: 'Speed', value: '2.4 studs/s' },
-        { key: 'Head-look', value: 'player' },
-        { key: 'Fires', value: 'footsteps → Audio' },
-        { key: 'Created by', value: 'Animation Graph' },
+        { key: 'Animation', value: 'idle / walk / run' },
+        { key: 'LODs', value: '3 (auto)' },
+        { key: 'Created by', value: 'Model Graph (Alien)' },
       ],
     };
+
+    const children: SceneInstance[] = [];
     // The alien's MaterialVariant is a sub-instance of its model, like the mushroom's.
     if (layers.glow)
-      creature.children = [
-        {
-          id: 'alien-material',
-          name: 'Skin material',
-          type: 'MaterialVariant',
-          accent: MAT,
-          graphId: 'surface-alien',
-          props: [
-            { key: 'Class', value: 'MaterialVariant' },
-            { key: 'Albedo', value: '#7C4DFF (skin)' },
-            { key: 'Emissive', value: '#B388FF (veins)' },
-            { key: 'Pulse', value: '1.5 Hz' },
-            { key: 'Belly gradient', value: 'On' },
-            { key: 'Reads', value: '“glow” ← Model Graph (Alien)' },
-            { key: 'Created by', value: 'Material Graph (Alien)' },
-          ],
-        },
-      ];
+      children.push({
+        id: 'alien-material',
+        name: 'Skin material',
+        type: 'MaterialVariant',
+        accent: MAT,
+        graphId: 'surface-alien',
+        props: [
+          { key: 'Class', value: 'MaterialVariant' },
+          { key: 'Albedo', value: '#7C4DFF (skin)' },
+          { key: 'Emissive', value: '#B388FF (veins)' },
+          { key: 'Pulse', value: '1.5 Hz' },
+          { key: 'Belly gradient', value: 'On' },
+          { key: 'Reads', value: '“glow” ← Model Graph (Alien)' },
+          { key: 'Created by', value: 'Material Graph (Alien)' },
+        ],
+      });
+    // The Animator sub-instance drives the alien from its Animation Graph.
+    children.push({
+      id: 'alien-anim',
+      name: 'Animation',
+      type: 'Animator',
+      accent: ANIM,
+      graphId: 'move',
+      props: [
+        { key: 'Class', value: 'Animator' },
+        { key: 'Graph', value: 'AnimationGraphDefinition' },
+        { key: 'Clips', value: 'idle / walk / run' },
+        { key: 'Blend', value: 'by speed' },
+        { key: 'Head-look', value: 'player' },
+        { key: 'Fires', value: 'footsteps → Audio' },
+        { key: 'Driven by', value: 'Animation Graph' },
+      ],
+    });
+    creature.children = children;
     list.push(creature);
   }
 
