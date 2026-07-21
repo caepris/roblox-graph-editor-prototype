@@ -4,7 +4,7 @@ export const WORKFLOW: WorkflowStep[] = [
   {
     id: 1,
     domainId: 'creation',
-    title: 'Ask the AI to generate it',
+    title: 'Ask the AI to generate a mushroom',
     action:
       'The creator opens the assistant and asks it to “generate bioluminescent mushroom.” The AI authors a Model Graph for it.',
     stage: 1,
@@ -14,44 +14,64 @@ export const WORKFLOW: WorkflowStep[] = [
   {
     id: 2,
     domainId: 'creation',
-    title: 'Edit the generated graph',
+    title: 'Edit the mushroom’s Model Graph',
     action:
-      'The Model Graph the AI generated appears — generate → shape. The creator edits attributes like cap radius and stem height directly on the nodes.',
+      'The generated Model Graph appears — generate → shape. The creator tweaks attributes like cap radius and stem height right on the nodes.',
     stage: 2,
     runsAt: 'Edit-time',
   },
   {
     id: 3,
     domainId: 'surface',
-    title: 'Surface it',
-    action: 'They give the cap a glowing, mossy look — the glow driven by the exposed “glow” value.',
+    title: 'Add a material to the mushroom',
+    action:
+      'The creator adds a material and the mushroom’s Material Graph opens — a ShaderVM surface program driving its glowing, mossy look.',
     stage: 3,
     runsAt: 'Runtime',
   },
   {
     id: 4,
-    domainId: 'decorator',
-    title: 'Scatter it',
+    domainId: 'alien',
+    title: 'Create the alien’s Model Graph',
     action:
-      'A Decorator Graph scatters hundreds of the mushroom asset across the grove, avoiding the path and varying each copy — streamed at runtime.',
+      'The creator authors a second asset — an alien creature — with its own Model Graph, producing a rigged, reusable model.',
     stage: 4,
-    runsAt: 'Runtime',
+    runsAt: 'Offline',
   },
   {
     id: 5,
-    domainId: 'move',
-    title: 'Move it',
-    action: 'They add an alien creature and make it blend between idle, walk, and run as it roams.',
+    domainId: 'surface-alien',
+    title: 'Add a material to the alien',
+    action:
+      'The creator gives the alien a skin material; its own Material Graph opens, driving the bioluminescent skin.',
     stage: 5,
     runsAt: 'Runtime',
   },
   {
     id: 6,
-    domainId: 'sound',
-    title: 'Sound it — press play',
+    domainId: 'move',
+    title: 'Animate the alien',
     action:
-      'They layer in an ambient bed, a hum on each mushroom, and footsteps — and the grove comes alive.',
+      'An Animation Graph blends idle, walk, and run from live game state so the alien roams — evaluated every frame.',
     stage: 6,
+    runsAt: 'Runtime',
+  },
+  {
+    id: 7,
+    domainId: 'sound',
+    title: 'Add audio instances',
+    action:
+      'They wire up an ambient bed, a hum on each mushroom, and footstep sounds through the Audio Graph.',
+    stage: 7,
+    runsAt: 'Runtime',
+  },
+  {
+    id: 8,
+    domainId: 'sound',
+    title: 'Press play and test it',
+    action:
+      'Everything runs together at runtime — press Play to bring the grove to life and move the creature.',
+    stage: 8,
     runsAt: 'Runtime',
   },
 ];

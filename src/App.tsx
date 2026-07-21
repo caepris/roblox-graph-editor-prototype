@@ -11,13 +11,19 @@ import { WORKFLOW } from './data/workflow';
 import type { LayerKey, Layers } from './types';
 
 // Which layers are on at each guided-tour step (cumulative).
-const TOUR_LAYERS: Layers[] = WORKFLOW.map((_, i) => ({
-  glow: i >= 2,
-  skin: i >= 4, // alien skin appears with the creature
-  scatter: i >= 3,
-  creature: i >= 4,
-  sound: i >= 5,
-}));
+// Layers composed at each guided-tour step (1-indexed by position). Each step
+// accumulates what the creator has built so far; the final step turns on
+// everything for the runtime play-test.
+const TOUR_LAYERS: Layers[] = [
+  { glow: false, skin: false, scatter: false, creature: false, sound: false }, // 1 · ask AI (empty)
+  { glow: false, skin: false, scatter: false, creature: false, sound: false }, // 2 · edit mushroom model
+  { glow: true, skin: false, scatter: false, creature: false, sound: false }, // 3 · mushroom material
+  { glow: true, skin: false, scatter: false, creature: true, sound: false }, // 4 · alien model
+  { glow: true, skin: true, scatter: false, creature: true, sound: false }, // 5 · alien material
+  { glow: true, skin: true, scatter: false, creature: true, sound: false }, // 6 · alien animation
+  { glow: true, skin: true, scatter: false, creature: true, sound: true }, // 7 · audio
+  { glow: true, skin: true, scatter: true, creature: true, sound: true }, // 8 · play everything
+];
 
 export default function App() {
   // Start on guided-tour step 1, with domain + layers matching that step so
