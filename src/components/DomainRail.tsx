@@ -1,5 +1,11 @@
 import { PRODUCTS, domainById } from '../data/domains';
 
+const ASSISTANT_ACCENT = '#a855f7';
+
+// The Asset Graph is reached via entry points (not the rail); the Assistant is
+// rendered as its own bespoke item, so both are filtered from the graph list.
+const GRAPH_PRODUCTS = PRODUCTS.filter((p) => p.product !== 'asset' && p.product !== 'assistant');
+
 export default function DomainRail({
   activeId,
   onSelect,
@@ -8,6 +14,7 @@ export default function DomainRail({
   onSelect: (id: string) => void;
 }) {
   const activeProduct = domainById(activeId).product;
+  const assistantActive = activeProduct === 'assistant';
 
   return (
     <aside className="rail">
@@ -20,8 +27,22 @@ export default function DomainRail({
       </div>
 
       <div className="rail-group">
+        <div className="rail-group-label">Assistant</div>
+        <button
+          className={`rail-item ${assistantActive ? 'active' : ''}`}
+          style={assistantActive ? { borderColor: ASSISTANT_ACCENT } : undefined}
+          onClick={() => {
+            if (!assistantActive) onSelect('assistant');
+          }}
+        >
+          <span className="rail-item-dot" style={{ background: ASSISTANT_ACCENT }} />
+          <span className="rail-name">Assistant</span>
+        </button>
+      </div>
+
+      <div className="rail-group">
         <div className="rail-group-label">Graphs</div>
-        {PRODUCTS.map((p) => {
+        {GRAPH_PRODUCTS.map((p) => {
           const active = activeProduct === p.product;
           return (
             <button

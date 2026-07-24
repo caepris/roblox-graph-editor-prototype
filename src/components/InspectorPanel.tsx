@@ -49,7 +49,7 @@ function buildInstances(layers: Layers): SceneInstance[] {
       { key: 'Stem height', editable: { param: 'stemHeight', min: 0.6, max: 1.8, step: 0.01 } },
       { key: 'LODs', value: '3 (auto)' },
       { key: 'Reusable', value: 'Yes' },
-      { key: 'Created by', value: 'Model Graph' },
+      { key: 'Created by', value: 'CreationGraph' },
       { key: 'Exposes', value: '“glow” → Material' },
     ],
     // The MaterialVariant is a sub-instance of its mesh; its eye toggles glow.
@@ -68,7 +68,7 @@ function buildInstances(layers: Layers): SceneInstance[] {
           { key: 'Glow intensity', editable: { param: 'glowIntensity', min: 0, max: 2, step: 0.01 } },
           { key: 'Pulse', value: '2 Hz' },
           { key: 'Moss by height', value: 'On' },
-          { key: 'Reads', value: '“glow” ← Model Graph' },
+          { key: 'Reads', value: '“glow” ← CreationGraph' },
           { key: 'Created by', value: 'Material Graph' },
         ],
       },
@@ -85,11 +85,11 @@ function buildInstances(layers: Layers): SceneInstance[] {
     hidden: creatureHidden,
     props: [
       { key: 'Class', value: 'Model' },
-      { key: 'Rig', value: '← Model Graph (Alien)' },
+      { key: 'Rig', value: '← CreationGraph (Alien)' },
       { key: 'Material', value: 'Skin material' },
       { key: 'Animation', value: 'idle / walk / run' },
       { key: 'LODs', value: '3 (auto)' },
-      { key: 'Created by', value: 'Model Graph (Alien)' },
+      { key: 'Created by', value: 'CreationGraph (Alien)' },
     ],
     children: [
       {
@@ -106,7 +106,7 @@ function buildInstances(layers: Layers): SceneInstance[] {
           { key: 'Emissive', value: '#B388FF (veins)' },
           { key: 'Pulse', value: '1.5 Hz' },
           { key: 'Belly gradient', value: 'On' },
-          { key: 'Reads', value: '“glow” ← Model Graph (Alien)' },
+          { key: 'Reads', value: '“glow” ← CreationGraph (Alien)' },
           { key: 'Created by', value: 'Material Graph (Alien)' },
         ],
       },

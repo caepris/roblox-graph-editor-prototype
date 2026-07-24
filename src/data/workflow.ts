@@ -6,7 +6,7 @@ export const WORKFLOW: WorkflowStep[] = [
     domainId: 'creation',
     title: 'Ask the AI to generate a mushroom',
     action:
-      'The creator opens the assistant and asks it to “generate bioluminescent mushroom.” The AI authors a Model Graph for it.',
+      'The creator asks the assistant to “generate bioluminescent mushroom.” The Asset Graph runs gen-AI on the cloud (prompt → image → 3D mesh → texture) — non-deterministic and async.',
     stage: 1,
     runsAt: 'Offline',
     chat: true,
@@ -14,9 +14,9 @@ export const WORKFLOW: WorkflowStep[] = [
   {
     id: 2,
     domainId: 'creation',
-    title: 'Edit the mushroom’s Model Graph',
+    title: 'Edit the mushroom’s CreationGraph',
     action:
-      'The generated Model Graph appears — generate → shape. The creator tweaks attributes like cap radius and stem height right on the nodes.',
+      'The Asset Graph froze the gen-AI output into a cached mesh (stable asset id + hash); the CreationGraph fetches it and shapes it with the deterministic ModelGraphNodes builtins — Fetch, Transform, CSGUnion/Subtract, Repeat, Mirror, SmoothNormals. The creator tweaks attribute pins like cap radius and stem height right on the nodes and it re-evaluates.',
     stage: 2,
     runsAt: 'Edit-time',
   },
@@ -41,9 +41,9 @@ export const WORKFLOW: WorkflowStep[] = [
   {
     id: 5,
     domainId: 'alien',
-    title: 'Create the alien’s Model Graph',
+    title: 'Create the alien’s CreationGraph',
     action:
-      'The creator authors a second asset — an alien creature — with its own Model Graph, producing a rigged, reusable model.',
+      'The creator authors a second asset — an alien creature — with its own CreationGraph: it fetches a baked mesh from the Asset Graph, then deterministic CSG builtins (with Mirror for bilateral symmetry) produce a rigged, reusable model.',
     stage: 5,
     runsAt: 'Offline',
   },

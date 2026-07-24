@@ -6,6 +6,7 @@ import ChatPanel from './components/ChatPanel';
 import PreviewStage from './components/PreviewStage';
 import InspectorPanel from './components/InspectorPanel';
 import { ParamsProvider } from './ParamsContext';
+import { PromptHistoryContext } from './PromptHistoryContext';
 import { DOMAINS, domainById } from './data/domains';
 import { WORKFLOW } from './data/workflow';
 import type { LayerKey, Layers } from './types';
@@ -36,8 +37,12 @@ export default function App() {
   const [mode, setMode] = useState<'edit' | 'play'>('edit');
   const [animPreview, setAnimPreview] = useState(false); // in-graph animation loop preview
   const [promptSent, setPromptSent] = useState(!WORKFLOW[0].chat); // step 1: has the AI generated yet
+  // Every prompt sent to the assistant, tracked + shown in the Asset Graph.
+  const [promptHistory, setPromptHistory] = useState<string[]>(['bioluminescent mushroom, glowing teal cap']);
+  const addPrompt = useCallback((text: string) => setPromptHistory((h) => [...h, text]), []);
 
   const domain = domainById(activeId);
+  const isAssistant = domain.product === 'assistant';
   const activeStep = tourStep !== null ? WORKFLOW[tourStep - 1] : null;
   const isChat = activeStep?.chat ?? false;
   const visibleIds = activeStep && !activeStep.chat ? activeStep.nodeIds : undefined;
@@ -79,14 +84,20 @@ export default function App() {
     setLayers({ ...TOUR_LAYERS[clamped - 1] });
     // Re-entering the chat step resets to an empty, ungenerated world.
     if (WORKFLOW[clamped - 1].chat) setPromptSent(false);
+    // The final step runs the finished scene at runtime; earlier steps author in edit.
+    setMode(clamped === WORKFLOW.length ? 'play' : 'edit');
   }, []);
 
   const startTour = useCallback(() => goToTourStep(1), [goToTourStep]);
-  const exitTour = useCallback(() => setTourStep(null), []);
+  const exitTour = useCallback(() => {
+    setTourStep(null);
+    setMode('edit'); // leaving the tour always returns to the editable scene
+  }, []);
   const toggleMode = useCallback(() => setMode((m) => (m === 'play' ? 'edit' : 'play')), []);
 
   return (
     <ParamsProvider>
+      <PromptHistoryContext.Provider value={promptHistory}>
       <div className="app">
         <DomainRail activeId={domain.id} onSelect={selectDomain} />
         <div className="main">
@@ -114,6 +125,16 @@ export default function App() {
                 accent={domain.accent}
                 onOpenGraph={() => goToTourStep(tourStep + 1)}
                 onGenerated={() => setPromptSent(true)}
+                onPrompt={addPrompt}
+              />
+            ) : isAssistant ? (
+              <ChatPanel
+                accent={domain.accent}
+                standalone
+                onOpenGraph={() => selectDomain('creation')}
+                onOpenAssetGraph={() => selectDomain('asset')}
+                onGenerated={() => {}}
+                onPrompt={addPrompt}
               />
             ) : (
               <GraphCanvas
@@ -142,6 +163,7 @@ export default function App() {
           onToggleLayer={toggleLayer}
         />
       </div>
+      </PromptHistoryContext.Provider>
     </ParamsProvider>
   );
 }

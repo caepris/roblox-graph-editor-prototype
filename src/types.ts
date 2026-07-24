@@ -1,6 +1,6 @@
 import type { Node, Edge } from '@xyflow/react';
 
-export type NodeKind = 'input' | 'op' | 'param' | 'attr' | 'output';
+export type NodeKind = 'input' | 'op' | 'param' | 'attr' | 'firewall' | 'output';
 
 export type LayerKey = 'glow' | 'skin' | 'scatter' | 'creature' | 'sound';
 
@@ -43,6 +43,9 @@ export interface DomainNodeData extends Record<string, unknown> {
   // When set, this node hands off to / reads from another graph; the id of that
   // domain. Rendered as a clickable entry point that navigates there.
   linkTo?: string;
+  // When true, this node renders the running list of prompts sent to the
+  // assistant (the Asset Graph's prompt-history tracker).
+  showPromptHistory?: boolean;
 }
 
 export type Params = Record<ParamKey, number>;
@@ -59,7 +62,7 @@ export interface Domain {
   id: string;
   // The product this graph belongs to (one rail entry per product). Several
   // concrete graphs can share a product — e.g. the Mushroom and Alien graphs
-  // are both the "Model Graph" product, picked via the explorer.
+  // are both the "CreationGraph" product, picked via the explorer.
   product: string;
   name: string; // e.g. "Model Graph" — the product name shown in the rail
   subject?: string; // e.g. "Mushroom" — the specific asset a per-asset graph authors
